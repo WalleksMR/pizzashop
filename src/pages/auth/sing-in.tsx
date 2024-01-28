@@ -19,14 +19,14 @@ export function SignIn() {
     handleSubmit,
     formState: { isSubmitting },
   } = useForm<SignInForm>()
-  async function handlSignIn(data: SignInForm) {
+  async function handleSignIn(data: SignInForm) {
     try {
       console.log(data)
       await new Promise<void>((resolve) => setTimeout(resolve, 2000))
       toast.success('Enviamos um link de autenticação para seu e-mail.', {
         action: {
           label: 'Reenviar',
-          onClick: () => handlSignIn(data),
+          onClick: () => handleSignIn(data),
         },
       })
     } catch (error) {
@@ -48,7 +48,7 @@ export function SignIn() {
             <p>Acompanhe suas vendas pelo painel do parceiro!</p>
           </div>
 
-          <form onSubmit={handleSubmit(handlSignIn)} className="space-y-4">
+          <form onSubmit={handleSubmit(handleSignIn)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Seu e-mail</Label>
               <Input id="email" type="email" {...register('email')} />

@@ -4,7 +4,7 @@ export function Dashboard() {
   return (
     <>
       <Helmet title="Login" />
-      <h1>Dashboard</h1>
+      <div className="flex flex-col gap-4"></div>
     </>
   )
 }

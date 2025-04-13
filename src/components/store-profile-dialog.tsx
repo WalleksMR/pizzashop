@@ -73,8 +73,35 @@ export function StoreProfileDialog() {
     /**
      * Aqui o comportamento sera de atualizar os dados em cache no momento que a request de update for sucesso
      */
-    onSuccess(_, { name, description }) {
-      updateManagedRestaurantCached({ name, description });
+    // onSuccess(_, { name, description }) {
+    //   updateManagedRestaurantCached({
+    //     name,
+    //     description
+    //   });
+    // },
+
+    /**
+     * Interface Otimista
+     * Este conceito permite reagir a alterações de entrada do usuário antes mesmo que elas sejam confirmadas no backend.
+     * Para implementar a interface otimista, separamos o código de atualização em uma função separada e a chamamos no evento onMutate, que é acionado no momento em que o usuário clica no botão de salvar.
+     * Também utilizamos o evento onError para lidar com erros na requisição, revertendo o cache para os dados originais caso ocorra algum problema.
+     *  A interface otimista é uma técnica poderosa para melhorar a experiência do usuário em situações em que a probabilidade de erro é baixa.
+     *
+     */
+
+    onMutate({ name, description }) {
+      return updateManagedRestaurantCached({
+        name,
+        description
+      });
+    },
+    onError(_, __, context) {
+      if (context?.previousManagedRestaurant) {
+        updateManagedRestaurantCached({
+          name: context.previousManagedRestaurant.name,
+          description: context.previousManagedRestaurant.description
+        });
+      }
     }
   });
 

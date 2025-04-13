@@ -9,14 +9,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from './ui/dropdown-menu';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { getProfile } from '@/api/get-profile';
 import { getManagedRestaurant } from '@/api/get-managed-restorant';
 import { Skeleton } from './ui/skeleton';
 import { Dialog, DialogTrigger } from './ui/dialog';
 import { StoreProfileDialog } from './store-profile-dialog';
+import { signOut } from '@/api/sign-out';
+import { useNavigate } from 'react-router-dom';
 
 export function AccountMenuProps() {
+  const navigate = useNavigate();
+
   // Vantagem de utilizar ReactQuery é a deduplicação. Por exemplo, caso precise buscar essa mesma informação na api do usuário logado
   // ela ira consegue fazer apenas um unica requisição com base na key, que identifica unicamente uma requisição na minha aplicação.
 
@@ -32,6 +36,14 @@ export function AccountMenuProps() {
       queryFn: getManagedRestaurant,
       staleTime: Infinity
     });
+
+  const { mutateAsync: signOutFn, isPending: isSigningOut } = useMutation({
+    mutationFn: signOut,
+    onSuccess: () => {
+      // replace, faz com que o usuário nao possa volta na pagina anterior
+      navigate('/sign-in', { replace: true });
+    }
+  });
 
   return (
     <Dialog>
@@ -73,9 +85,15 @@ export function AccountMenuProps() {
               <span>Perfil da loja</span>
             </DropdownMenuItem>
           </DialogTrigger>
-          <DropdownMenuItem className='text-rose-500 dark:text-rose-400'>
-            <LogOut className='mr-2 h-4 w-4' />
-            <span>Sair</span>
+          <DropdownMenuItem
+            asChild
+            className='text-rose-500 dark:text-rose-400'
+            disabled={isSigningOut}
+          >
+            <button className='w-full' onClick={() => signOutFn()}>
+              <LogOut className='mr-2 h-4 w-4' />
+              <span>Sair</span>
+            </button>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

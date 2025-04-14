@@ -26,32 +26,34 @@ export interface OrderTableRowProps {
 export function OrderTableRow({ order }: OrderTableRowProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const queryClient = useQueryClient();
+  function updateOrderStatusOnCache(orderId: string, status: OrderStatus) {
+    const orderListCache = queryClient.getQueriesData<GerOrdersResponse>({
+      queryKey: ['orders']
+    });
 
+    orderListCache.forEach(([cacheKey, cacheData]) => {
+      if (!cacheData) {
+        return;
+      }
+      queryClient.setQueryData<GerOrdersResponse>(cacheKey, {
+        ...cacheData,
+        orders: cacheData.orders.map(order => {
+          if (order.orderId === orderId) {
+            return {
+              ...order,
+              status
+            };
+          }
+          return order;
+        })
+      });
+    });
+  }
   const { mutateAsync: cancelOrderFn, isPending: isCancelOrderPending } =
     useMutation({
       mutationFn: cancelOrder,
       onSuccess: async (_, { orderId }) => {
-        const orderListCache = queryClient.getQueriesData<GerOrdersResponse>({
-          queryKey: ['orders']
-        });
-
-        orderListCache.forEach(([cacheKey, cacheData]) => {
-          if (!cacheData) {
-            return;
-          }
-          queryClient.setQueryData<GerOrdersResponse>(cacheKey, {
-            ...cacheData,
-            orders: cacheData.orders.map(order => {
-              if (order.orderId === orderId) {
-                return {
-                  ...order,
-                  status: 'canceled'
-                };
-              }
-              return order;
-            })
-          });
-        });
+        updateOrderStatusOnCache(orderId, 'canceled');
       }
     });
 

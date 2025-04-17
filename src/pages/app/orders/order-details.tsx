@@ -6,7 +6,6 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -19,6 +18,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { OrderDetailsSkeleton } from './order-details-skeleton';
 export interface OrderDetailsProps {
   orderId: string;
   isOpen: boolean;
@@ -43,103 +43,63 @@ export function OrderDetails({ orderId, isOpen }: OrderDetailsProps) {
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>
-          {isOrderLoading ? (
-            <Skeleton className='h-3  w-[calc(100%-2rem)]' />
-          ) : (
-            `Pedido: ${order?.id}`
-          )}
-        </DialogTitle>
-        <DialogDescription>
-          {isOrderLoading ? (
-            <Skeleton className='h-3 w-20' />
-          ) : (
-            ' Detalhes do pedido'
-          )}
-        </DialogDescription>
+        <DialogTitle>Pedido: {orderId}</DialogTitle>
+        <DialogDescription>Detalhes do pedido</DialogDescription>
       </DialogHeader>
+      {order ? (
+        <div className='space-y-6'>
+          <Table>
+            <TableRow>
+              <TableCell className='text-muted-foreground'>Status</TableCell>
+              <TableCell className='flex justify-end'>
+                {<OrderStatus status={order.status} />}
+              </TableCell>
+            </TableRow>
 
-      <div className='space-y-6'>
-        <Table>
-          <TableRow>
-            <TableCell className='text-muted-foreground'>Status</TableCell>
-            <TableCell className='flex justify-end'>
-              {isOrderLoading ? (
-                <Skeleton className='h-3  w-[calc(100%-8rem)]' />
-              ) : (
-                order && <OrderStatus status={order.status} />
-              )}
-            </TableCell>
-          </TableRow>
+            <TableRow>
+              <TableCell className='text-muted-foreground'>Cliente</TableCell>
+              <TableCell className='flex justify-end'>
+                {order.customer.name}
+              </TableCell>
+            </TableRow>
 
-          <TableRow>
-            <TableCell className='text-muted-foreground'>Cliente</TableCell>
-            <TableCell className='flex justify-end'>
-              {isOrderLoading ? (
-                <Skeleton className='h-3  w-[calc(100%-1rem)]' />
-              ) : (
-                order?.customer.name
-              )}
-            </TableCell>
-          </TableRow>
+            <TableRow>
+              <TableCell className='text-muted-foreground'>Telefone</TableCell>
+              <TableCell className='flex justify-end'>
+                {order.customer.phone ?? 'Não informado'}
+              </TableCell>
+            </TableRow>
 
-          <TableRow>
-            <TableCell className='text-muted-foreground'>Telefone</TableCell>
-            <TableCell className='flex justify-end'>
-              {isOrderLoading ? (
-                <Skeleton className='h-3 w-[calc(100%-4rem)]' />
-              ) : (
-                (order?.customer.phone ?? 'Não informado')
-              )}
-            </TableCell>
-          </TableRow>
-
-          <TableRow>
-            <TableCell className='text-muted-foreground'>E-mail</TableCell>
-            <TableCell className='flex justify-end'>
-              {isOrderLoading ? (
-                <Skeleton className='h-3 w-full' />
-              ) : (
-                order?.customer.email
-              )}
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell className='text-muted-foreground'>
-              Realizado há
-            </TableCell>
-            <TableCell className='flex justify-end'>
-              {isOrderLoading ? (
-                <Skeleton className='h-3 w-[calc(150px-2rem)]' />
-              ) : (
-                order &&
-                formatDistanceToNow(order.createdAt, {
+            <TableRow>
+              <TableCell className='text-muted-foreground'>E-mail</TableCell>
+              <TableCell className='flex justify-end'>
+                {order.customer.email}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className='text-muted-foreground'>
+                Realizado há
+              </TableCell>
+              <TableCell className='flex justify-end'>
+                {formatDistanceToNow(order.createdAt, {
                   locale: ptBR,
                   addSuffix: true
-                })
-              )}
-            </TableCell>
-          </TableRow>
-        </Table>
-
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Produto</TableHead>
-              <TableHead className='text-right'>Qtd</TableHead>
-              <TableHead className='text-right'>Preço</TableHead>
-              <TableHead className='text-right'>Subtotal</TableHead>
+                })}
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isOrderLoading ? (
+          </Table>
+
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={4}>
-                  <Skeleton className='h-3' />
-                </TableCell>
+                <TableHead>Produto</TableHead>
+                <TableHead className='text-right'>Qtd</TableHead>
+                <TableHead className='text-right'>Preço</TableHead>
+                <TableHead className='text-right'>Subtotal</TableHead>
               </TableRow>
-            ) : (
-              order?.orderItems.map(orderItem => {
+            </TableHeader>
+            <TableBody>
+              {order.orderItems.map(orderItem => {
                 const subTotal = (
                   (orderItem.priceInCents * orderItem.quantity) /
                   100
@@ -167,21 +127,19 @@ export function OrderDetails({ orderId, isOpen }: OrderDetailsProps) {
                     <TableCell className='text-right'>{subTotal}</TableCell>
                   </TableRow>
                 );
-              })
-            )}
-          </TableBody>
-          <TableFooter>
-            <TableCell colSpan={3}>Total do pedido</TableCell>
-            <TableCell className='text-right font-medium'>
-              {isOrderLoading ? (
-                <Skeleton className='h-3 w-[calc(150px-2rem)]' />
-              ) : (
-                priceTotal
-              )}
-            </TableCell>
-          </TableFooter>
-        </Table>
-      </div>
+              })}
+            </TableBody>
+            <TableFooter>
+              <TableCell colSpan={3}>Total do pedido</TableCell>
+              <TableCell className='text-right font-medium'>
+                {priceTotal}
+              </TableCell>
+            </TableFooter>
+          </Table>
+        </div>
+      ) : (
+        <OrderDetailsSkeleton />
+      )}
     </DialogContent>
   );
 }

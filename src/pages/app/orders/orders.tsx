@@ -4,7 +4,6 @@ import { Pagination } from '@/components/pagination';
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow
@@ -16,8 +15,8 @@ import { useQuery } from '@tanstack/react-query';
 import { getOrders } from '@/api/get-orders';
 import { useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
-import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { OrderTableSkeleton } from './order-table-skeleton';
 
 export function Orders() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -80,21 +79,14 @@ export function Orders() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isOrderLoading
-                  ? Array.from({ length: 10 }).map((_, index) => (
-                      <TableRow>
-                        <TableCell colSpan={8}>
-                          <Skeleton
-                            id={index.toString()}
-                            className='h-8 w-full '
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  : result &&
-                    result.orders.map(order => (
-                      <OrderTableRow key={order.orderId} order={order} />
-                    ))}
+                {isOrderLoading ? (
+                  <OrderTableSkeleton />
+                ) : (
+                  result &&
+                  result.orders.map(order => (
+                    <OrderTableRow key={order.orderId} order={order} />
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
